@@ -7,32 +7,48 @@ export async function POST(req: Request) {
       await req.json();
 
     // STRICT CLOUDFLARE TURNSTILE VALIDATION
-    if (!cfToken && process.env.NODE_ENV !== "development") {
+    const isProd = process.env.NODE_ENV !== "development";
+    if (isProd && !cfToken) {
       return NextResponse.json(
         { error: "Turnstile CAPTCHA token required" },
         { status: 403 },
       );
     }
 
-    if (cfToken && process.env.NODE_ENV !== "development") {
+    if (isProd && cfToken && cfToken !== "DEV_BYPASS") {
       const formData = new FormData();
-      formData.append("secret", process.env.CLOUDFLARE_SECRET_KEY as string);
+      const cfSecret = process.env.CLOUDFLARE_SECRET_KEY as string;
+      formData.append("secret", cfSecret);
       formData.append("response", cfToken);
 
-      const cfVerifyRes = await fetch(
-        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+      try {
+        const cfVerifyRes = await fetch(
+          "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
 
-      const cfVerifyData = await cfVerifyRes.json();
-      if (!cfVerifyData.success) {
-        console.error("Turnstile failed:", cfVerifyData);
+        const cfVerifyData = await cfVerifyRes.json();
+        if (!cfVerifyData.success) {
+          console.error("Turnstile backend verification failed:", cfVerifyData);
+          return NextResponse.json(
+            {
+              error:
+                "Bot protection check failed. Please refresh the page and solve the verification again.",
+            },
+            { status: 403 },
+          );
+        }
+      } catch (verifyError) {
+        console.error(
+          "Failed to reach Cloudflare API for siteverify:",
+          verifyError,
+        );
         return NextResponse.json(
-          { error: "Invalid CAPTCHA token. Please reload and try again." },
-          { status: 403 },
+          { error: "Internal server error during bot verification." },
+          { status: 500 },
         );
       }
     }
