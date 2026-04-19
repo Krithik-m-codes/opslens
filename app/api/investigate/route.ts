@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { runInvestigation } from "../../../lib/agent/investigator";
 
-export const maxDuration = 60; // Allow sufficient time for the AI to complete its tool loop
+export const maxDuration = 60; // Allow time for the AI to complete its tool loop
 
 export async function POST(req: Request) {
   try {

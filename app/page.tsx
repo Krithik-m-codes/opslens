@@ -8,6 +8,7 @@ import { InvestigationPanel } from "../components/InvestigationPanel";
 import { SummaryPanel } from "../components/SummaryPanel";
 import { ReviewControls } from "../components/ReviewControls";
 import { ModelSelector } from "../components/ModelSelector";
+import Image from "next/image";
 import { Activity, Beaker, Zap, Play, ShieldCheck } from "lucide-react";
 import Script from "next/script";
 
@@ -104,7 +105,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative flex h-screen w-full bg-[#050907] text-slate-300 overflow-hidden font-sans selection:bg-emerald-500/30">
+    <div className="relative flex flex-col lg:flex-row min-h-[100dvh] lg:h-screen w-full bg-[#050907] text-slate-300 overflow-y-auto lg:overflow-hidden font-sans selection:bg-emerald-500/30">
       {/* Official Cloudflare Turnstile Initialization via explicit render */}
       <Script
         src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
@@ -121,7 +122,7 @@ export default function Dashboard() {
       />
 
       {/* Tactical Background Effects */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Radar concentric rings */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-emerald-900/20 rounded-full animate-[spin_60s_linear_infinite]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] border border-emerald-900/10 rounded-full" />
@@ -132,20 +133,27 @@ export default function Dashboard() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] z-50 pointer-events-none opacity-20"></div>
       </div>
 
-      <div className="relative z-10 flex flex-col lg:flex-row w-full h-full p-2 lg:p-4 gap-4 overflow-y-auto lg:overflow-hidden">
+      <div className="relative z-10 flex flex-col lg:flex-row w-full h-full min-h-[100dvh] lg:min-h-0 p-2 lg:p-4 gap-4 overflow-y-visible lg:overflow-hidden">
         {/* Left Bento Column (Timeline) */}
         <aside className="w-full lg:w-80 flex flex-col gap-4 h-[50vh] lg:h-full shrink-0">
           <div className="bg-black/60 backdrop-blur-xl rounded-2xl border border-emerald-900/50 p-6 shadow-2xl flex items-center justify-between shadow-emerald-900/10">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-emerald-500 blur-md opacity-30 rounded-full" />
-                <div className="relative p-2.5 bg-gradient-to-tr from-emerald-600 to-emerald-400 rounded-xl shadow-lg ring-1 ring-white/10">
-                  <Activity className="w-6 h-6 text-black" />
+                <div className="relative w-12 h-12 bg-gradient-to-tr from-emerald-900 to-emerald-700/50 rounded-xl shadow-lg ring-1 ring-emerald-500/50 flex items-center justify-center overflow-hidden">
+                  <Image
+                    src="/icons/android-chrome-192x192.png"
+                    alt="OpsLens Logo"
+                    fill
+                    className="object-contain p-1.5 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                  />
                 </div>
               </div>
               <div>
-                <h1 className="font-bold text-xl text-white tracking-tight uppercase">
-                  Ridgeway Ops
+                <h1 className="font-bold text-lg lg:text-xl text-white tracking-tight uppercase flex items-center gap-2">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">
+                    OpsLens
+                  </span>
                 </h1>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400/80">
                   6:10 Assistant
