@@ -15,15 +15,9 @@ export const providers: AIProvider[] = [
     models: [
       { id: "meta/llama-3.1-405b-instruct", name: "Llama 3.1 405B" },
       { id: "meta/llama-3.1-70b-instruct", name: "Llama 3.1 70B" },
-      { id: "mistralai/mixtral-8x22b-instruct-v0.1", name: "Mixtral 8x22B" },
-    ],
-  },
-  {
-    id: "google",
-    name: "Google Gemini",
-    models: [
-      { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
-      { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash" },
+      { id: "mistralai/mistral-large-2-instruct", name: "Mistral Large" },
+      { id: "qwen/qwen2.5-72b-instruct", name: "Qwen 2.5 72B" },
+      { id: "deepseek-ai/deepseek-r1", name: "DeepSeek R1" },
     ],
   },
 ];

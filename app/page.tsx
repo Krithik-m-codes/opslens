@@ -33,7 +33,9 @@ export default function Dashboard() {
   // Turnstile Vanilla Context
   const turnstileContainerRef = useRef<HTMLDivElement>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const isHuman = !!turnstileToken;
+
+  const isDev = process.env.NODE_ENV === "development";
+  const isHuman = isDev ? true : !!turnstileToken;
 
   useEffect(() => {
     async function fetchEventsAndTrigger() {
@@ -60,7 +62,7 @@ export default function Dashboard() {
         events: evtData,
         providerId: prov,
         modelId: mod,
-        cfToken: turnstileToken, // Send token to backend for optional strict verification
+        cfToken: isDev ? "DEV_BYPASS" : turnstileToken, // Send token to backend for optional strict verification
       };
       if (instruction) {
         bodyPayload.userInstruction = instruction;
@@ -107,19 +109,21 @@ export default function Dashboard() {
   return (
     <div className="relative flex flex-col lg:flex-row min-h-[100dvh] lg:h-screen w-full bg-[#050907] text-slate-300 overflow-y-auto lg:overflow-hidden font-sans selection:bg-emerald-500/30">
       {/* Official Cloudflare Turnstile Initialization via explicit render */}
-      <Script
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-        strategy="afterInteractive"
-        onLoad={() => {
-          if (window.turnstile && turnstileContainerRef.current) {
-            window.turnstile.render(turnstileContainerRef.current, {
-              sitekey: process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY,
-              callback: (token: string) => setTurnstileToken(token),
-              theme: "dark",
-            });
-          }
-        }}
-      />
+      {!isDev && (
+        <Script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+          strategy="afterInteractive"
+          onLoad={() => {
+            if (window.turnstile && turnstileContainerRef.current) {
+              window.turnstile.render(turnstileContainerRef.current, {
+                sitekey: process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY,
+                callback: (token: string) => setTurnstileToken(token),
+                theme: "dark",
+              });
+            }
+          }}
+        />
+      )}
 
       {/* Tactical Background Effects */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
@@ -191,11 +195,13 @@ export default function Dashboard() {
             </div>
 
             <div className="flex flex-col sm:flex-row w-full lg:w-auto items-stretch sm:items-center gap-3 bg-black/40 p-2 rounded-xl border border-emerald-900/40 ring-1 ring-white/5 shadow-inner relative z-50">
-              {/* Native Turnstile Container */}
-              <div
-                ref={turnstileContainerRef}
-                className="overflow-hidden rounded-lg scale-90 sm:scale-100 origin-left place-self-center pointer-events-auto shrink-0 mr-2"
-              />
+              {/* Native Turnstile Container - Only render in Prod */}
+              {!isDev && (
+                <div
+                  ref={turnstileContainerRef}
+                  className="overflow-hidden rounded-lg scale-90 sm:scale-100 origin-left place-self-center pointer-events-auto shrink-0 mr-2"
+                />
+              )}
 
               <ModelSelector
                 selectedProvider={provider}

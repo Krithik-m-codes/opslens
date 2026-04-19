@@ -6,7 +6,6 @@ import {
 } from "../tools";
 import { generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
-import { google } from "@ai-sdk/google";
 import { Event, InvestigationStep, AgentSummary } from "../../types/event";
 
 const systemPrompt = `You are OpsLens, an AI-first intelligence investigator for Ridgeway Site (a large industrial facility).
@@ -52,9 +51,6 @@ export async function runInvestigation(
     case "nvidia":
       model = nvidia.chat(modelId);
       break;
-    case "google":
-      model = google(modelId || "gemini-1.5-pro");
-      break;
     default:
       model = nvidia.chat("meta/llama-3.1-405b-instruct");
   }
@@ -82,15 +78,30 @@ export async function runInvestigation(
       });
       clearTimeout(timeoutId);
 
-      // Try to parse the pure JSON from the output, stripping backticks if the model ignores our instruction
-      const cln = text
+      // Clean up markdown wrapping aggressively
+      let cln = text
         .replace(/```json/gi, "")
+        .replace(/```JSON/gi, "")
         .replace(/```/g, "")
         .trim();
-      object = JSON.parse(cln);
+
+      // If the LLM dumped conversational text before or after the JSON, slice to the first { and last }
+      const jsonMatch = cln.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cln = jsonMatch[0];
+      }
+
+      try {
+        object = JSON.parse(cln);
+      } catch (parseErr) {
+        console.error("Failed to parse JSON. Raw LLM output was:", text);
+        throw new Error("Invalid JSON format returned from LLM.");
+      }
     } catch (e: any) {
       console.error(
-        "Failed to generate or parse JSON from model output:",
+        "Investigation loop failed on iteration",
+        i,
+        ":",
         e.message || e,
       );
       break;
