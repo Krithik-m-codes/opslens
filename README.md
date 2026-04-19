@@ -39,6 +39,8 @@ Create a `.env.local` file in the root of your project and add your API keys:
 ```env
 NVIDIA_API_KEY=your_nvidia_nim_api_key
 GOOGLE_GENERATIVE_AI_API_KEY=your_google_api_key
+NEXT_PUBLIC_CLOUDFLARE_SITE_KEY=your_cloudflare_turnstile_site_key
+CLOUDFLARE_SECRET_KEY=your_cloudflare_turnstile_secret_key
 ```
 
 ### 3. Run the Development Server
