@@ -72,7 +72,7 @@ export async function runInvestigation(
     let object;
     try {
       const abortController = new AbortController();
-      const timeoutId = setTimeout(() => abortController.abort(), 15000);
+      const timeoutId = setTimeout(() => abortController.abort(), 55000); // Increased timeout to 55s
 
       const { text } = await generateText({
         model: model,
