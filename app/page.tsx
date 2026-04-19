@@ -8,7 +8,15 @@ import { InvestigationPanel } from "../components/InvestigationPanel";
 import { SummaryPanel } from "../components/SummaryPanel";
 import { ReviewControls } from "../components/ReviewControls";
 import { ModelSelector } from "../components/ModelSelector";
-import { Activity, Beaker, Zap, Play } from "lucide-react";
+import { Activity, Beaker, Zap, Play, ShieldCheck } from "lucide-react";
+import Script from "next/script";
+
+// Add window type extension for Turnstile
+declare global {
+  interface Window {
+    turnstile: any;
+  }
+}
 
 export default function Dashboard() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -20,6 +28,11 @@ export default function Dashboard() {
   const [provider, setProvider] = useState<string>("nvidia");
   const [model, setModel] = useState<string>("meta/llama-3.1-405b-instruct");
   const hasTriggeredRef = useRef(false);
+
+  // Turnstile Vanilla Context
+  const turnstileContainerRef = useRef<HTMLDivElement>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const isHuman = !!turnstileToken;
 
   useEffect(() => {
     async function fetchEventsAndTrigger() {
@@ -46,6 +59,7 @@ export default function Dashboard() {
         events: evtData,
         providerId: prov,
         modelId: mod,
+        cfToken: turnstileToken, // Send token to backend for optional strict verification
       };
       if (instruction) {
         bodyPayload.userInstruction = instruction;
@@ -91,6 +105,21 @@ export default function Dashboard() {
 
   return (
     <div className="relative flex h-screen w-full bg-[#050907] text-slate-300 overflow-hidden font-sans selection:bg-emerald-500/30">
+      {/* Official Cloudflare Turnstile Initialization via explicit render */}
+      <Script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+        strategy="afterInteractive"
+        onLoad={() => {
+          if (window.turnstile && turnstileContainerRef.current) {
+            window.turnstile.render(turnstileContainerRef.current, {
+              sitekey: process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY,
+              callback: (token: string) => setTurnstileToken(token),
+              theme: "dark",
+            });
+          }
+        }}
+      />
+
       {/* Tactical Background Effects */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Radar concentric rings */}
@@ -154,6 +183,12 @@ export default function Dashboard() {
             </div>
 
             <div className="flex flex-col sm:flex-row w-full lg:w-auto items-stretch sm:items-center gap-3 bg-black/40 p-2 rounded-xl border border-emerald-900/40 ring-1 ring-white/5 shadow-inner relative z-50">
+              {/* Native Turnstile Container */}
+              <div
+                ref={turnstileContainerRef}
+                className="overflow-hidden rounded-lg scale-90 sm:scale-100 origin-left place-self-center pointer-events-auto shrink-0 mr-2"
+              />
+
               <ModelSelector
                 selectedProvider={provider}
                 setSelectedProvider={setProvider}
@@ -162,7 +197,7 @@ export default function Dashboard() {
               />
               <button
                 onClick={handleManualTrigger}
-                disabled={isInvestigating}
+                disabled={isInvestigating || !isHuman}
                 className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:bg-slate-800 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-[0_0_15px_rgba(52,211,153,0.3)] active:scale-95 uppercase tracking-wide"
               >
                 {isInvestigating ? (
