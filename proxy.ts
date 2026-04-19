@@ -6,10 +6,11 @@ import type { NextRequest } from "next/server";
  * Ensures the traffic is actually coming through Cloudflare (to utilize their bot/DDoS protection).
  */
 export function proxy(req: NextRequest) {
-  // Bypass Cloudflare proxy check in local development
+  // Bypass Cloudflare proxy check in local development or default Vercel domains
   if (
     process.env.NODE_ENV === "development" ||
-    req.nextUrl.hostname === "localhost"
+    req.nextUrl.hostname === "localhost" ||
+    req.nextUrl.hostname.endsWith(".vercel.app")
   ) {
     const response = NextResponse.next();
     response.headers.set("x-opslens-proxy", "dev-bypassed");
